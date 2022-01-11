@@ -81,6 +81,14 @@ export const App = () => {
   }
 
   /**
+   * ゴミ箱を空にするボタンのコールバック関数
+   */
+  const handleOnEmpty = () => {
+    const newTodos = todos.filter((todo) => !todo.removed)
+    setTodos(newTodos)
+  }
+
+  /**
    * フィルタリング済のTodoリスト
    */
   const filteredTodos = todos.filter((todo) => (
@@ -101,19 +109,31 @@ export const App = () => {
         <option value='unchecked'>現在のタスク</option>
         <option value='removed'>ゴミ箱</option>
       </select>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          handleOnSubmit()
-        }}
-      >
-        <input type="text" value={text} onChange={(e) => handleOnChange(e)} />
-        <input
-          type="submit"
-          value="追加"
-          onSubmit={handleOnSubmit}
-        />
-      </form>
+      {filter === 'removed' ? (
+        //ゴミ箱表示時のフォーム
+        <button
+          onClick={handleOnEmpty}
+          disabled={todos.filter((todo) => todo.removed).length === 0}
+        >
+          ゴミ箱を空にする
+        </button>
+      ) : (
+        //ゴミ箱以外の表示時のフォーム
+        <form onSubmit={(e) => { handleOnSubmit() }}>
+          <input
+            type="text"
+            value={text}
+            disabled={filter === 'checked'}
+            onChange={(e) => handleOnChange(e)}
+          />
+          <input
+            type="submit"
+            value="追加"
+            disabled={filter === 'checked'}
+            onSubmit={handleOnSubmit}
+          />
+        </form>
+      )}
       <ul>
         {filteredTodos.map((todo) => {
           return (
