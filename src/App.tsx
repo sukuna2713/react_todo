@@ -1,7 +1,13 @@
 import React from 'react';
 import logo from './logo.svg';
 import { useState } from 'react';
+import { match, select, when, not, __ } from 'ts-pattern';
 import './App.css';
+
+/**
+ * 現在のフィルターの状態
+ */
+type Filter = 'all' | 'checked' | 'unchecked' | 'removed'
 
 /**
  * Todo単品
@@ -17,7 +23,8 @@ export const App = () => {
   const [text, setText] = useState('')
   //Todoの集合
   const [todos, setTodos] = useState<Todo[]>([])
-
+  //現在のフィルター
+  const [filter, setFilter] = useState<Filter>('all')
   //todosステートを更新するコールバック関数
   const handleOnSubmit = () => {
     if (!text) return
@@ -73,8 +80,27 @@ export const App = () => {
     setTodos(newTodos)
   }
 
+  /**
+   * フィルタリング済のTodoリスト
+   */
+  const filteredTodos = todos.filter((todo) => (
+    //filterの内容に応じて返す真偽値を変える
+    match(filter)
+      .with('all', () => !todo.removed)
+      .with('checked', () => todo.checked && !todo.removed)
+      .with('unchecked', () => !todo.checked && !todo.removed)
+      .with('removed', () => todo.removed)
+      .otherwise(() => false)
+  ))
+
   return (
     <div>
+      <select defaultValue="all" onChange={(e) => setFilter(e.target.value as Filter)}>
+        <option value='all'>すべてのタスク</option>
+        <option value='checked'>完了したタスク</option>
+        <option value='unchecked'>現在のタスク</option>
+        <option value='removed'>ゴミ箱</option>
+      </select>
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -89,7 +115,7 @@ export const App = () => {
         />
       </form>
       <ul>
-        {todos.map((todo) => {
+        {filteredTodos.map((todo) => {
           return (
             <li key={todo.id}>
               <input
