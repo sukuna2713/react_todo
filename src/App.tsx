@@ -119,7 +119,10 @@ export const App = () => {
         </button>
       ) : (
         //ゴミ箱以外の表示時のフォーム
-        <form onSubmit={(e) => { handleOnSubmit() }}>
+        <form onSubmit={(e) => {
+          e.preventDefault()
+          handleOnSubmit()
+        }}>
           <input
             type="text"
             value={text}
