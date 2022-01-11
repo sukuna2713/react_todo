@@ -9,6 +9,7 @@ import './App.css';
 type Todo = {
   value: string
   readonly id: number
+  checked: boolean
 }
 
 export const App = () => {
@@ -23,7 +24,8 @@ export const App = () => {
     //識別子として現在時刻を使用
     const newTodo: Todo = {
       value: text,
-      id: new Date().getTime()
+      id: new Date().getTime(),
+      checked: false
     }
 
     setTodos([newTodo, ...todos])
@@ -32,6 +34,30 @@ export const App = () => {
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setText(e.target.value)
+  }
+
+  /**
+   * 登録済みtodoが編集されたときのコールバック関数
+   */
+
+  const handleOnEdit = (id: number, value: string) => {
+    //元のTodosのディープコピーをつくる
+    const deepCopy = todos.map((todo) => ({ ...todo }))
+    //IDが一致するTodoの値をvalueで書き換える
+    const newTodos = deepCopy.map((todo) => todo.id === id ? { ...todo, value: value } : todo)
+
+    setTodos(newTodos)
+  }
+
+  /**
+   * チェックボックスがチェックされたときのコールバック関数
+   */
+  const handleOnCheck = (id: number, checked: boolean) => {
+    const deepCopy = todos.map((todo) => ({ ...todo }))
+
+    const newTodos = deepCopy.map((todo) => todo.id === id ? { ...todo, checked: !checked } : todo)
+
+    setTodos(newTodos)
   }
 
   return (
@@ -51,7 +77,22 @@ export const App = () => {
       </form>
       <ul>
         {todos.map((todo) => {
-          return <li key={todo.id}>{todo.value}</li>
+          return (
+            <li key={todo.id}>
+              <input
+                type='checkbox'
+                checked={todo.checked}
+                onChange={(e) => handleOnCheck(todo.id, todo.checked)}
+              />
+              <input
+                type='text'
+                //チェック済のタスクは入力フォームを無効にする
+                disabled={todo.checked}
+                value={todo.value}
+                onChange={(e) => handleOnEdit(todo.id, e.target.value)}
+              />
+            </li>
+          )
         })}
       </ul>
     </div>
