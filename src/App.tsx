@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import { useState } from 'react';
 import { match, select, when, not, __ } from 'ts-pattern';
 import './App.css';
