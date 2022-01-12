@@ -1,7 +1,10 @@
 import React from 'react';
-import { useState } from 'react';
+import { useReducer } from 'react';
+import { reducer } from './reducer'
+import { initialState } from './initialState';
 import { match, select, when, not, __ } from 'ts-pattern';
 import './App.css';
+import { userInfo } from 'os';
 
 /**
  * 現在のフィルターの状態
@@ -19,29 +22,14 @@ type Todo = {
 }
 
 export const App = () => {
-  const [text, setText] = useState('')
-  //Todoの集合
-  const [todos, setTodos] = useState<Todo[]>([])
-  //現在のフィルター
-  const [filter, setFilter] = useState<Filter>('all')
+  const [state, dispatch] = useReducer(reducer, initialState)
   //todosステートを更新するコールバック関数
   const handleOnSubmit = () => {
-    if (!text) return
-
-    //識別子として現在時刻を使用
-    const newTodo: Todo = {
-      value: text,
-      id: new Date().getTime(),
-      checked: false,
-      removed: false
-    }
-
-    setTodos([newTodo, ...todos])
-    setText('')
+    dispatch({ type: 'submit' })
   }
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setText(e.target.value)
+    dispatch({ type: 'change', text: e.target.value })
   }
 
   /**
@@ -49,50 +37,43 @@ export const App = () => {
    */
 
   const handleOnEdit = (id: number, value: string) => {
-    //元のTodosのディープコピーをつくる
-    const deepCopy = todos.map((todo) => ({ ...todo }))
-    //IDが一致するTodoの値をvalueで書き換える
-    const newTodos = deepCopy.map((todo) => todo.id === id ? { ...todo, value: value } : todo)
-
-    setTodos(newTodos)
+    dispatch({ type: 'edit', id, value })
   }
 
   /**
    * チェックボックスがチェックされたときのコールバック関数
    */
   const handleOnCheck = (id: number, checked: boolean) => {
-    const deepCopy = todos.map((todo) => ({ ...todo }))
-
-    const newTodos = deepCopy.map((todo) => todo.id === id ? { ...todo, checked: !checked } : todo)
-
-    setTodos(newTodos)
+    dispatch({ type: 'check', id, checked })
   }
 
   /**
    * 削除ボタンを押したときのコールバック関数
    */
   const handleOnRemove = (id: number, removed: boolean) => {
-    const deepCopy = todos.map((todo) => ({ ...todo }))
-
-    const newTodos = deepCopy.map((todo) => (todo.id === id ? { ...todo, removed: !removed } : todo))
-
-    setTodos(newTodos)
+    dispatch({ type: 'remove', id, removed })
   }
 
   /**
    * ゴミ箱を空にするボタンのコールバック関数
    */
   const handleOnEmpty = () => {
-    const newTodos = todos.filter((todo) => !todo.removed)
-    setTodos(newTodos)
+    dispatch({ type: 'empty' })
+  }
+
+  /**
+   * フィルター変更時のコールバック関数
+   */
+  const handleOnFilter = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    dispatch({ type: 'filter', filter: e.target.value as Filter })
   }
 
   /**
    * フィルタリング済のTodoリスト
    */
-  const filteredTodos = todos.filter((todo) => (
+  const filteredTodos = state.todos.filter((todo) => (
     //filterの内容に応じて返す真偽値を変える
-    match(filter)
+    match(state.filter)
       .with('all', () => !todo.removed)
       .with('checked', () => todo.checked && !todo.removed)
       .with('unchecked', () => !todo.checked && !todo.removed)
@@ -102,17 +83,17 @@ export const App = () => {
 
   return (
     <div>
-      <select defaultValue="all" onChange={(e) => setFilter(e.target.value as Filter)}>
+      <select defaultValue="all" onChange={handleOnFilter}>
         <option value='all'>すべてのタスク</option>
         <option value='checked'>完了したタスク</option>
         <option value='unchecked'>現在のタスク</option>
         <option value='removed'>ゴミ箱</option>
       </select>
-      {filter === 'removed' ? (
+      {state.filter === 'removed' ? (
         //ゴミ箱表示時のフォーム
         <button
           onClick={handleOnEmpty}
-          disabled={todos.filter((todo) => todo.removed).length === 0}
+          disabled={state.todos.filter((todo) => todo.removed).length === 0}
         >
           ゴミ箱を空にする
         </button>
@@ -124,14 +105,14 @@ export const App = () => {
         }}>
           <input
             type="text"
-            value={text}
-            disabled={filter === 'checked'}
+            value={state.text}
+            disabled={state.filter === 'checked'}
             onChange={(e) => handleOnChange(e)}
           />
           <input
             type="submit"
             value="追加"
-            disabled={filter === 'checked'}
+            disabled={state.filter === 'checked'}
             onSubmit={handleOnSubmit}
           />
         </form>

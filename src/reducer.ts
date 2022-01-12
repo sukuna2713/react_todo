@@ -31,9 +31,9 @@ export const reducer = (state: State, action: Action): State => (
         .with({ type: 'remove', id: select('id'), removed: select('removed') }, (selection) => {
             const deepCopy = state.todos.map((todo) => ({ ...todo }))
 
-            //IDが一致するTODOを削除済みを入れ替える
+            //IDが一致するTODOの削除済みを入れ替える
             const newTodos = deepCopy.map(
-                (todo) => (todo.id === selection.id ? { ...todo, removed: selection.removed } : todo)
+                (todo) => (todo.id === selection.id ? { ...todo, removed: !selection.removed } : todo)
             )
             return { ...state, todos: newTodos }
         })
