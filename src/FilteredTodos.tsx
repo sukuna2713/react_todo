@@ -1,31 +1,28 @@
-import { Dispatch, memo } from 'react'
+import { Dispatch, memo, useContext } from 'react'
 import { match, select, when, not, __ } from 'ts-pattern'
+import { AppContext } from './AppContext'
 
-//Propsに変化がない限りFilteredTodosで描画されるコンポーネントは再計算されない
-type Props = {
-    state: State
-    dispatch: Dispatch<Action>
-}
+export const FilteredTodos = memo(() => {
+    const { state, dispatch } = useContext(AppContext)
 
-export const FilteredTodos = memo((props: Props) => {
     const handleOnEdit = (id: number, value: string) => {
-        props.dispatch({ type: 'edit', id, value })
+        dispatch({ type: 'edit', id, value })
     }
 
     const handleOnCheck = (id: number, checked: boolean) => {
-        props.dispatch({ type: 'check', id, checked })
+        dispatch({ type: 'check', id, checked })
     }
 
     const handleOnRemove = (id: number, removed: boolean) => {
-        props.dispatch({ type: 'remove', id, removed })
+        dispatch({ type: 'remove', id, removed })
     }
 
     /**
      * フィルタリング済のTodoリスト
      */
-    const filteredTodos = props.state.todos.filter((todo) => (
+    const filteredTodos = state.todos.filter((todo) => (
         //filterの内容に応じて返す真偽値を変える
-        match(props.state.filter)
+        match(state.filter)
             .with('all', () => !todo.removed)
             .with('checked', () => todo.checked && !todo.removed)
             .with('unchecked', () => !todo.checked && !todo.removed)

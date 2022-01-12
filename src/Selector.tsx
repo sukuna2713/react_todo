@@ -1,16 +1,13 @@
-import { Dispatch, memo } from 'react'
-
-//Propsに変化がない限りSelectorで描画されるコンポーネントは再計算されない
-type Props = {
-    dispatch: Dispatch<Action>
-}
+import { memo, useContext } from 'react'
+import { AppContext } from './AppContext'
 
 /**
  * 上部のセレクターを切り出してメモ化
  */
-export const Selector = memo((props: Props) => {
+export const Selector = memo(() => {
+    const { state, dispatch } = useContext(AppContext)
     const handleOnFilter = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        props.dispatch({ type: 'filter', filter: e.target.value as Filter })
+        dispatch({ type: 'filter', filter: e.target.value as Filter })
     }
 
     return (

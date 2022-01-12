@@ -1,18 +1,15 @@
-import { Dispatch, memo } from 'react'
+import { useContext, memo } from 'react'
+import { AppContext } from './AppContext'
 
-//Propsに変化がない限りFormで描画されるコンポーネントは再計算されない
-type Props = {
-    state: State
-    dispatch: Dispatch<Action>
-}
-
-export const Form = memo((props: Props) => {
+export const Form = memo(() => {
+    //stateとdispatchがAppContextより提供される
+    const { state, dispatch } = useContext(AppContext)
     const handleOnSubmit = () => {
-        props.dispatch({ type: 'submit' })
+        dispatch({ type: 'submit' })
     }
 
     const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        props.dispatch({ type: 'change', text: e.target.value })
+        dispatch({ type: 'change', text: e.target.value })
     }
 
     return (
@@ -22,14 +19,14 @@ export const Form = memo((props: Props) => {
         }}>
             <input
                 type="text"
-                value={props.state.text}
-                disabled={props.state.filter === 'checked'}
+                value={state.text}
+                disabled={state.filter === 'checked'}
                 onChange={(e) => handleOnChange(e)}
             />
             <input
                 type="submit"
                 value="追加"
-                disabled={props.state.filter === 'checked'}
+                disabled={state.filter === 'checked'}
                 onSubmit={handleOnSubmit}
             />
         </form>
