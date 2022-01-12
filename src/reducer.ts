@@ -25,6 +25,11 @@ export const reducer = (state: State, action: Action): State => (
             )
             return { ...state, todos: newTodos }
         })
+        //ゴミ箱を空にする
+        .with({ type: 'empty' }, () => {
+            const newTodos = state.todos.filter((todo) => !todo.removed)
+            return { ...state, todos: newTodos }
+        })
         //フィルターの変更
         .with({ type: 'filter', filter: select() }, (selection) => ({ ...state, filter: selection }))
         //TODOの削除
